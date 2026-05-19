@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Le fait du jour</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1814;
+    --paper: #f5f0e8;
+    --paper-dark: #ede8dc;
+    --accent: #c8452a;
+    --muted: #8a8070;
+    --line: #d4cfc4;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      repeating-linear-gradient(0deg, transparent, transparent 27px, var(--line) 27px, var(--line) 28px);
+    opacity: 0.35;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page {
+    position: relative;
+    z-index: 1;
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 3rem 2rem 6rem;
+    width: 100%;
+    flex: 1;
+  }
+
+  header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 3.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1.5px solid var(--ink);
+  }
+
+  .header-left { display: flex; flex-direction: column; gap: 2px; }
+
+  .pub-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .edition {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .date-display {
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-align: right;
+  }
+
+  .history-toggle {
+    background: none;
+    border: 1px solid var(--muted);
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-radius: 2px;
+  }
+  .history-toggle:hover { border-color: var(--ink); color: var(--ink); }
+
+  .main-section { margin-bottom: 2.5rem; }
+
+  .category-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 500;
+    margin-bottom: 1.2rem;
+    opacity: 0;
+    animation: fadeUp 0.5s ease forwards 0.2s;
+  }
+
+  .category-tag::before {
+    content: '';
+    width: 20px;
+    height: 1.5px;
+    background: var(--accent);
+    display: inline-block;
+  }
+
+  .fact-headline {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(26px, 4vw, 38px);
+    font-weight: 700;
+    line-height: 1.25;
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    animation: fadeUp 0.6s ease forwards 0.35s;
+  }
+
+  .divider {
+    width: 40px;
+    height: 2px;
+    background: var(--ink);
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    animation: fadeUp 0.5s ease forwards 0.5s;
+  }
+
+  .more-section {
+    opacity: 0;
+    animation: fadeUp 0.6s ease forwards 0.6s;
+  }
+
+  .more-label {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.75rem;
+    font-weight: 500;
+  }
+
+  .more-text {
+    font-size: 16px;
+    line-height: 1.75;
+    color: #3a3530;
+    max-width: 560px;
+  }
+
+  .loading-state {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 2rem 0;
+  }
+
+  .skeleton {
+    background: linear-gradient(90deg, var(--paper-dark) 25%, var(--line) 50%, var(--paper-dark) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 2px;
+  }
+
+  .skeleton-tag { height: 14px; width: 120px; }
+  .skeleton-h1 { height: 38px; width: 90%; }
+  .skeleton-h2 { height: 38px; width: 65%; }
+  .skeleton-line { height: 16px; width: 100%; }
+  .skeleton-line.short { width: 75%; }
+
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .history-panel {
+    display: none;
+    position: fixed;
+    top: 0; right: 0; bottom: 0;
+    width: min(420px, 92vw);
+    background: var(--paper);
+    border-left: 1.5px solid var(--ink);
+    z-index: 100;
+    overflow-y: auto;
+    transform: translateX(100%);
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .history-panel.open {
+    display: block;
+    transform: translateX(0);
+  }
+
+  .history-header {
+    padding: 2rem;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    background: var(--paper);
+    z-index: 1;
+  }
+
+  .history-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 700;
+  }
+
+  .close-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 22px;
+    line-height: 1;
+    padding: 4px;
+    transition: color 0.2s;
+  }
+  .close-btn:hover { color: var(--ink); }
+
+  .history-list { padding: 1.5rem 2rem; display: flex; flex-direction: column; gap: 0; }
+
+  .history-item {
+    padding: 1.25rem 0;
+    border-bottom: 0.5px solid var(--line);
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .history-item:hover { opacity: 0.7; }
+  .history-item:last-child { border-bottom: none; }
+
+  .history-item-date {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .history-item-theme {
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+    font-weight: 500;
+  }
+
+  .history-item-fact {
+    font-family: 'Playfair Display', serif;
+    font-size: 15px;
+    line-height: 1.4;
+    color: var(--ink);
+  }
+
+  .overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(26,24,20,0.3);
+    z-index: 99;
+  }
+  .overlay.open { display: block; }
+
+  .empty-history {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  .emoji-display {
+    font-size: 48px;
+    margin-bottom: 1.5rem;
+    display: block;
+    opacity: 0;
+    animation: fadeUp 0.5s ease forwards 0.1s;
+  }
+
+  footer {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 1.5rem 2rem;
+    border-top: 1px solid var(--line);
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+  }
+
+  @media (max-width: 480px) {
+    .page { padding: 2rem 1.25rem 5rem; }
+    .edition { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="overlay" id="overlay" onclick="closeHistory()"></div>
+
+<div class="history-panel" id="historyPanel">
+  <div class="history-header">
+    <span class="history-title">Archives</span>
+    <button class="close-btn" onclick="closeHistory()" aria-label="Fermer">×</button>
+  </div>
+  <div class="history-list" id="historyList">
+    <div class="empty-history">Aucun fait enregistré pour l'instant.<br>Reviens demain !</div>
+  </div>
+</div>
+
+<div class="page">
+  <header>
+    <div class="header-left">
+      <span class="pub-name">La gazette du savoir</span>
+      <span class="edition">Le fait du jour</span>
+    </div>
+    <div style="display:flex; flex-direction:column; align-items:flex-end; gap:10px;">
+      <span class="date-display" id="dateDisplay"></span>
+      <button class="history-toggle" onclick="openHistory()">↗ Archives</button>
+    </div>
+  </header>
+
+  <main class="main-section" id="mainSection">
+    <div class="loading-state" id="loadingState">
+      <div class="skeleton skeleton-tag"></div>
+      <div class="skeleton skeleton-h1"></div>
+      <div class="skeleton skeleton-h2"></div>
+      <div style="height:12px"></div>
+      <div class="skeleton skeleton-line"></div>
+      <div class="skeleton skeleton-line"></div>
+      <div class="skeleton skeleton-line short"></div>
+    </div>
+    <div id="factDisplay" style="display:none;">
+      <span class="emoji-display" id="factEmoji"></span>
+      <div class="category-tag" id="factTheme"></div>
+      <h1 class="fact-headline" id="factHeadline"></h1>
+      <div class="divider"></div>
+      <div class="more-section">
+        <p class="more-label">Pour aller plus loin</p>
+        <p class="more-text" id="factMore"></p>
+      </div>
+    </div>
+  </main>
+</div>
+
+<footer>Un fait nouveau chaque jour — reviens demain ✦</footer>
+
+<script>
+const STORAGE_KEY = 'funfact_history';
+const TODAY_KEY = 'funfact_today';
+
+function getTodayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function formatDateFr(dateStr) {
+  const [y, m, d] = dateStr.split('-');
+  const months = ['jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'];
+  return `${parseInt(d)} ${months[parseInt(m)-1]} ${y}`;
+}
+
+function formatDateLong(dateStr) {
+  const [y, m, d] = dateStr.split('-');
+  const months = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+  const days = ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
+  const date = new Date(parseInt(y), parseInt(m)-1, parseInt(d));
+  return `${days[date.getDay()]} ${parseInt(d)} ${months[parseInt(m)-1]} ${y}`;
+}
+
+function getHistory() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch { return []; }
+}
+
+function saveToHistory(entry) {
+  const history = getHistory();
+  const existing = history.findIndex(h => h.date === entry.date);
+  if (existing >= 0) history[existing] = entry;
+  else history.unshift(entry);
+  if (history.length > 60) history.pop();
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+}
+
+function displayFact(data, animate = true) {
+  document.getElementById('loadingState').style.display = 'none';
+  const display = document.getElementById('factDisplay');
+  display.style.display = 'block';
+
+  document.getElementById('factEmoji').textContent = data.emoji || '💡';
+  document.getElementById('factTheme').textContent = data.theme || 'Savoir';
+  document.getElementById('factHeadline').textContent = data.fact;
+  document.getElementById('factMore').textContent = data.more || '';
+
+  if (!animate) {
+    display.querySelectorAll('[style*="animation"]').forEach(el => {
+      el.style.opacity = 1;
+      el.style.animation = 'none';
+    });
+  }
+}
+
+async function generateFact() {
+  const today = getTodayStr();
+
+  const cached = localStorage.getItem(TODAY_KEY);
+  if (cached) {
+    try {
+      const parsed = JSON.parse(cached);
+      if (parsed.date === today) {
+        displayFact(parsed);
+        return;
+      }
+    } catch {}
+  }
+
+  try {
+    const system = `Tu génères des fun facts en français, courts et percutants. Réponds UNIQUEMENT en JSON valide sans backticks ni markdown.
+Format: {"emoji":"🌍","theme":"Astronomie","fact":"Le fait en 1-2 phrases max, surprenant et mémorable.","more":"3-4 phrases de contexte et d'approfondissement, intéressantes et accessibles."}
+Varie les thèmes: sciences, histoire, animaux, géographie, cuisine, psychologie, technologie, arts, sport, nature, espace, langues, mathématiques, économie, médecine, philosophie...`;
+
+    const seed = Math.random().toString(36).slice(2);
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        system,
+        messages: [{ role: "user", content: `Génère un fun fact aléatoire (graine: ${seed})` }]
+      })
+    });
+
+    const data = await res.json();
+    const raw = data.content?.[0]?.text || '';
+    const clean = raw.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(clean);
+    parsed.date = today;
+
+    localStorage.setItem(TODAY_KEY, JSON.stringify(parsed));
+    saveToHistory(parsed);
+    displayFact(parsed);
+  } catch(e) {
+    document.getElementById('loadingState').innerHTML = `
+      <p style="color:#8a8070; font-size:15px; padding: 2rem 0; font-style:italic;">
+        Impossible de charger le fait du jour. Vérifie ta connexion et recharge la page.
+      </p>`;
+  }
+}
+
+function renderHistory() {
+  const history = getHistory();
+  const list = document.getElementById('historyList');
+  if (history.length === 0) {
+    list.innerHTML = '<div class="empty-history">Aucun fait enregistré pour l\'instant.<br>Reviens demain !</div>';
+    return;
+  }
+  list.innerHTML = history.map(h => `
+    <div class="history-item">
+      <div class="history-item-date">${formatDateFr(h.date)}</div>
+      <div class="history-item-theme">${h.theme || ''}</div>
+      <div class="history-item-fact">${h.emoji || ''} ${h.fact}</div>
+    </div>
+  `).join('');
+}
+
+function openHistory() {
+  renderHistory();
+  document.getElementById('historyPanel').classList.add('open');
+  document.getElementById('overlay').classList.add('open');
+}
+
+function closeHistory() {
+  document.getElementById('historyPanel').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+}
+
+document.getElementById('dateDisplay').textContent = formatDateLong(getTodayStr());
+generateFact();
+</script>
+</body>
+</html>
