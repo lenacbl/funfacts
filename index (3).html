@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Le fait du jour</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1814;
+    --paper: #f5f0e8;
+    --paper-dark: #ede8dc;
+    --accent: #c8452a;
+    --muted: #8a8070;
+    --line: #d4cfc4;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: repeating-linear-gradient(0deg, transparent, transparent 27px, var(--line) 27px, var(--line) 28px);
+    opacity: 0.35;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── Intro ── */
+  #intro {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--ink);
+  }
+  #intro.fade-out {
+    animation: introOut 0.7s ease forwards;
+  }
+  @keyframes introOut {
+    to { opacity: 0; visibility: hidden; }
+  }
+  .intro-paper {
+    position: absolute;
+    inset: 0;
+    background: var(--paper);
+    transform-origin: top center;
+    transform: scaleY(0);
+    animation: unfold 0.9s cubic-bezier(0.16,1,0.3,1) 0.5s forwards;
+  }
+  @keyframes unfold {
+    to { transform: scaleY(1); }
+  }
+  .intro-lines {
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(0deg, transparent, transparent 27px, var(--line) 27px, var(--line) 28px);
+    opacity: 0;
+    animation: showLines 0.3s ease 1.3s forwards;
+  }
+  @keyframes showLines { to { opacity: 0.35; } }
+  .intro-content {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .intro-label {
+    font-family: 'Playfair Display', serif;
+    font-size: 12px;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--paper);
+    opacity: 0;
+    animation: rise 0.5s ease 0.1s forwards;
+  }
+  .intro-heading {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(40px, 9vw, 76px);
+    font-weight: 700;
+    line-height: 1.05;
+    color: var(--paper);
+    opacity: 0;
+    animation: rise 0.6s ease 0.25s forwards;
+  }
+  .intro-bar {
+    width: 0;
+    height: 1.5px;
+    background: rgba(245,240,232,0.5);
+    animation: growBar 0.5s ease 0.5s forwards;
+  }
+  @keyframes growBar { to { width: 100px; } }
+  .intro-sub {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(245,240,232,0.45);
+    opacity: 0;
+    animation: rise 0.5s ease 0.65s forwards;
+  }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── Layout ── */
+  .page {
+    position: relative;
+    z-index: 1;
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 3rem 2rem 6rem;
+    width: 100%;
+    flex: 1;
+  }
+  header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 3.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1.5px solid var(--ink);
+  }
+  .header-left { display: flex; flex-direction: column; gap: 2px; }
+  .pub-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .edition {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .date-display {
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-align: right;
+  }
+  .history-toggle {
+    background: none;
+    border: 1px solid var(--muted);
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-radius: 2px;
+    margin-top: 8px;
+  }
+  .history-toggle:hover { border-color: var(--ink); color: var(--ink); }
+
+  /* ── Fact ── */
+  .main-section { margin-bottom: 2.5rem; }
+  .emoji-display { font-size: 48px; margin-bottom: 1.5rem; display: block; }
+  .category-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 500;
+    margin-bottom: 1.2rem;
+  }
+  .category-tag::before {
+    content: '';
+    width: 20px;
+    height: 1.5px;
+    background: var(--accent);
+    display: inline-block;
+  }
+  .fact-headline {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(26px, 4vw, 38px);
+    font-weight: 700;
+    line-height: 1.25;
+    margin-bottom: 1.5rem;
+  }
+  .divider { width: 40px; height: 2px; background: var(--ink); margin-bottom: 1.5rem; }
+  .more-label {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.75rem;
+    font-weight: 500;
+  }
+  .more-text { font-size: 16px; line-height: 1.75; color: #3a3530; max-width: 560px; }
+  .not-found { padding: 3rem 0; color: var(--muted); font-style: italic; font-size: 16px; line-height: 1.8; }
+
+  /* ── History panel ── */
+  .overlay { display: none; position: fixed; inset: 0; background: rgba(26,24,20,0.3); z-index: 99; }
+  .overlay.open { display: block; }
+  .history-panel {
+    display: none;
+    position: fixed;
+    top: 0; right: 0; bottom: 0;
+    width: min(420px, 92vw);
+    background: var(--paper);
+    border-left: 1.5px solid var(--ink);
+    z-index: 100;
+    overflow-y: auto;
+    transform: translateX(100%);
+    transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+  }
+  .history-panel.open { display: block; transform: translateX(0); }
+  .history-header {
+    padding: 2rem;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    background: var(--paper);
+    z-index: 1;
+  }
+  .history-title { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; }
+  .close-btn { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 22px; line-height: 1; padding: 4px; transition: color 0.2s; }
+  .close-btn:hover { color: var(--ink); }
+  .history-list { padding: 1.5rem 2rem; display: flex; flex-direction: column; }
+  .history-item { padding: 1.25rem 0; border-bottom: 0.5px solid var(--line); }
+  .history-item:last-child { border-bottom: none; }
+  .history-item-date { font-size: 11px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 4px; }
+  .history-item-theme { font-size: 10px; color: var(--accent); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 5px; font-weight: 500; }
+  .history-item-fact { font-family: 'Playfair Display', serif; font-size: 15px; line-height: 1.4; color: var(--ink); }
+
+  /* ── Footer ── */
+  footer {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 1.5rem 2rem;
+    border-top: 1px solid var(--line);
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+  }
+
+  @media (max-width: 480px) {
+    .page { padding: 2rem 1.25rem 5rem; }
+    .edition { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Intro -->
+<div id="intro">
+  <div class="intro-paper"></div>
+  <div class="intro-lines"></div>
+  <div class="intro-content">
+    <span class="intro-label">La gazette du savoir</span>
+    <span class="intro-heading">Le fait<br>du jour</span>
+    <div class="intro-bar"></div>
+    <span class="intro-sub">Édition quotidienne</span>
+  </div>
+</div>
+
+<!-- History overlay -->
+<div class="overlay" id="overlay" onclick="closeHistory()"></div>
+<div class="history-panel" id="historyPanel">
+  <div class="history-header">
+    <span class="history-title">Archives</span>
+    <button class="close-btn" onclick="closeHistory()" aria-label="Fermer">×</button>
+  </div>
+  <div class="history-list" id="historyList"></div>
+</div>
+
+<!-- Main page -->
+<div class="page">
+  <header>
+    <div class="header-left">
+      <span class="pub-name">La gazette du savoir</span>
+      <span class="edition">Le fait du jour</span>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;">
+      <span class="date-display" id="dateDisplay"></span>
+      <button class="history-toggle" onclick="openHistory()">↗ Archives</button>
+    </div>
+  </header>
+  <main class="main-section">
+    <div id="factDisplay"></div>
+  </main>
+</div>
+
+<footer>Un fait nouveau chaque jour — reviens demain ✦</footer>
+
+<script>
+const FACTS_DATA = [{"emoji": "🐙", "theme": "Animaux", "fact": "Les pieuvres ont trois cœurs et un sang bleu, grâce à une molécule contenant du cuivre au lieu du fer.", "more": "Cette molécule s'appelle l'hémocyanine. Elle est moins efficace que l'hémoglobine pour transporter l'oxygène, ce qui explique pourquoi les pieuvres sont peu endurantes à l'effort. En revanche, elle fonctionne mieux dans les eaux froides et peu oxygénées.", "date": "2026-05-20"}, {"emoji": "🌙", "theme": "Astronomie", "fact": "La Lune s'éloigne de la Terre d'environ 3,8 cm chaque année.", "more": "Cet éloignement est causé par les frictions des marées que la Lune provoque sur les océans terrestres. Dans quelques milliards d'années, les jours sur Terre dureront environ 25 heures. Il y a 1,4 milliard d'années, une journée ne durait que 18 heures.", "date": "2026-05-21"}, {"emoji": "🍯", "theme": "Alimentation", "fact": "Le miel est le seul aliment qui ne se périme jamais. Des pots vieux de 3000 ans trouvés dans des tombes égyptiennes étaient encore comestibles.", "more": "Le miel résiste à la dégradation grâce à sa faible teneur en eau, son pH acide et sa production naturelle de peroxyde d'hydrogène. Les abeilles y ajoutent aussi une enzyme, la glucose oxydase, qui contribue à sa conservation exceptionnelle.", "date": "2026-05-22"}, {"emoji": "🧠", "theme": "Psychologie", "fact": "Le cerveau humain ne peut pas faire la différence entre un souvenir réel et un souvenir imaginé avec suffisamment de détails.", "more": "Ce phénomène s'appelle la 'fausse mémoire'. Des études ont montré qu'on peut implanter de faux souvenirs assez facilement en suggérant des détails répétés. C'est un enjeu majeur en criminologie, car des témoins sincères peuvent se souvenir de choses qui ne se sont jamais passées.", "date": "2026-05-23"}, {"emoji": "🌊", "theme": "Géographie", "fact": "L'océan Pacifique est plus grand que toutes les terres émergées de la planète réunies.", "more": "Le Pacifique couvre environ 165 millions de km², soit plus que la surface totale des continents (149 millions de km²). Il contient plus de la moitié de toute l'eau des océans et abrite les fosses les plus profondes, dont la fosse des Mariannes à 11 km de profondeur.", "date": "2026-05-24"}, {"emoji": "🦋", "theme": "Biologie", "fact": "À l'intérieur d'une chrysalide, la chenille se dissout presque entièrement en une sorte de soupe cellulaire avant de se reconstruire en papillon.", "more": "Ce processus s'appelle l'histolyse. Les organes de la chenille se décomposent, mais certains groupes de cellules appelés 'disques imaginaux' survivent et servent de 'plans' pour reconstruire les nouvelles structures. C'est l'une des transformations biologiques les plus spectaculaires de la nature.", "date": "2026-05-25"}, {"emoji": "🔥", "theme": "Physique", "fact": "Le feu n'est pas une matière mais une réaction chimique — c'est pourquoi on ne peut pas 'toucher' une flamme : elle n'a pas de surface.", "more": "Une flamme est le résultat visible de la combustion rapide d'un gaz. Ce qu'on voit est de la lumière et de la chaleur émises par des molécules excitées. Dans l'espace, sans gravité, les flammes sont sphériques car il n'y a pas de convection pour leur donner leur forme caractéristique en pointe.", "date": "2026-05-26"}, {"emoji": "🐘", "theme": "Animaux", "fact": "Les éléphants sont les seuls animaux connus, avec les humains, à avoir des rituels funéraires. Ils restent près de leurs morts et les 'pleurent'.", "more": "Les éléphants reconnaissent les ossements de leurs congénères et réagissent différemment face aux restes d'un éléphant qu'à ceux d'autres animaux. Ils touchent les os avec leur trompe et peuvent rester des heures sur place. Ce comportement suggère une conscience de la mort très développée.", "date": "2026-05-27"}, {"emoji": "⏳", "theme": "Histoire", "fact": "Cléopâtre vivait plus proche de nous dans le temps que de la construction des pyramides de Gizeh.", "more": "Les pyramides ont été construites vers 2560 av. J.-C. Cléopâtre est née en 69 av. J.-C., soit environ 2500 ans après. Elle est morte en 30 av. J.-C., il y a environ 2050 ans. Cela signifie que les pyramides étaient déjà des 'antiquités' pour Cléopâtre elle-même.", "date": "2026-05-28"}, {"emoji": "🎵", "theme": "Musique", "fact": "La chanson 'Happy Birthday' a été sous copyright pendant près de 80 ans. Les producteurs de films devaient payer des droits pour la filmer.", "more": "Warner Music Group réclamait des royalties jusqu'en 2016, date à laquelle un tribunal américain a déclaré que leur copyright était invalide. Pendant des décennies, cela a généré environ 2 millions de dollars par an. C'est pourquoi les restaurants inventent souvent leurs propres chansons d'anniversaire.", "date": "2026-05-29"}, {"emoji": "🌍", "theme": "Géographie", "fact": "La France est le pays avec le plus de fuseaux horaires au monde : 12, devant la Russie qui en a 11.", "more": "Cela s'explique par les nombreux territoires d'outre-mer français dispersés sur toute la planète : Polynésie française, Nouvelle-Calédonie, Martinique, Guyane, La Réunion, etc. La France métropolitaine elle-même n'occupe qu'un seul fuseau horaire.", "date": "2026-05-30"}, {"emoji": "💧", "theme": "Sciences", "fact": "L'eau chaude peut geler plus vite que l'eau froide dans certaines conditions. Ce phénomène s'appelle l'effet Mpemba.", "more": "Découvert par un lycéen tanzanien en 1963 en préparant de la glace, ce phénomène reste partiellement inexpliqué. Les hypothèses incluent l'évaporation, la convection thermique et les gaz dissous. Il ne se produit pas toujours — les conditions exactes font encore débat parmi les scientifiques.", "date": "2026-05-31"}, {"emoji": "🦈", "theme": "Animaux", "fact": "Les requins existaient avant les arbres. Ils nagent sur Terre depuis 450 millions d'années, alors que les forêts n'apparaissent qu'il y a 360 millions d'années.", "more": "Les requins ont survécu à 5 extinctions de masse, dont celle qui a tué les dinosaures. Leur succès évolutif est tel que leur anatomie a très peu changé en millions d'années. En revanche, plus d'un tiers des espèces de requins actuelles sont menacées d'extinction à cause de la pêche humaine.", "date": "2026-06-01"}, {"emoji": "🧲", "theme": "Physique", "fact": "Si on retirait tout l'espace vide entre les atomes du corps humain, l'humanité entière tiendrait dans un dé à coudre.", "more": "Les atomes sont en grande majorité constitués de vide. Le noyau est minuscule par rapport à la taille de l'atome — comme une mouche dans une cathédrale. C'est ce principe qui est utilisé dans les étoiles à neutrons, où la gravité comprime toute la matière en éliminant cet espace vide.", "date": "2026-06-02"}, {"emoji": "🎨", "theme": "Art", "fact": "Van Gogh n'a vendu qu'un seul tableau de son vivant, 'La Vigne rouge', pour 400 francs. Ses œuvres valent aujourd'hui des dizaines de millions d'euros.", "more": "Van Gogh a produit plus de 2100 œuvres en seulement 10 ans de carrière artistique. Il souffrait de troubles mentaux sévères et n'a jamais connu la reconnaissance. Son frère Theo le soutenait financièrement. Après sa mort à 37 ans, c'est sa belle-sœur Jo qui a fait connaître son œuvre au monde entier.", "date": "2026-06-03"}, {"emoji": "🐜", "theme": "Nature", "fact": "La biomasse totale des fourmis sur Terre est comparable à celle de tous les humains réunis.", "more": "On estime à 20 000 milliards le nombre de fourmis sur Terre. Elles représentent environ 20% de la biomasse de tous les animaux terrestres. Les fourmis jouent un rôle écologique crucial : elles aèrent les sols, dispersent des graines et constituent une source de nourriture pour d'innombrables espèces.", "date": "2026-06-04"}, {"emoji": "🌋", "theme": "Géologie", "fact": "L'Islande s'agrandit d'environ 2,5 cm par an car elle est située exactement sur une dorsale océanique où deux plaques tectoniques s'écartent.", "more": "La dorsale médio-atlantique traverse l'Islande de nord en sud, ce qui est unique au monde — c'est le seul endroit où une dorsale océanique émerge au-dessus du niveau de la mer. On peut littéralement marcher d'une plaque tectonique à l'autre dans le parc national de Þingvellir.", "date": "2026-06-05"}, {"emoji": "💤", "theme": "Biologie", "fact": "Les dauphins dorment avec un seul hémisphère du cerveau à la fois, gardant l'autre éveillé pour continuer à nager et respirer.", "more": "Ce phénomène s'appelle le sommeil unihémisphérique. Les dauphins sont des respirateurs volontaires — ils doivent consciemment décider de respirer. Dormir complètement les noierait. Certains oiseaux migrateurs utilisent la même technique pour dormir en plein vol pendant des milliers de kilomètres.", "date": "2026-06-06"}, {"emoji": "📚", "theme": "Histoire", "fact": "La Bibliothèque d'Alexandrie ne contenait pas de livres mais des rouleaux de papyrus. Elle aurait contenu entre 40 000 et 700 000 rouleaux.", "more": "Fondée au IIIe siècle av. J.-C., elle était le plus grand centre de savoir du monde antique. Elle n'a pas brûlé en une seule fois comme le mythe le dit — elle a décliné progressivement sur plusieurs siècles. Jules César a peut-être accidentellement brûlé une partie lors de la guerre d'Alexandrie en 48 av. J.-C.", "date": "2026-06-07"}, {"emoji": "🦠", "theme": "Biologie", "fact": "Le corps humain contient autant de bactéries que de cellules humaines — environ 37 000 milliards de chaque.", "more": "Pendant longtemps, on croyait que les bactéries étaient 10 fois plus nombreuses que nos cellules. Une étude de 2016 a révisé ce chiffre à environ 1:1. Ces bactéries, principalement dans l'intestin, jouent un rôle vital dans la digestion, l'immunité et même la régulation de l'humeur via l'axe intestin-cerveau.", "date": "2026-06-08"}, {"emoji": "🌈", "theme": "Physique", "fact": "Un arc-en-ciel est en réalité un cercle complet. On ne voit que la moitié car le sol est dans le chemin.", "more": "Depuis un avion ou en haut d'une montagne, il est possible de voir un arc-en-ciel complet en anneau. L'arc-en-ciel n'est pas un objet fixe — il se déplace avec l'observateur. En fait, deux personnes ne voient jamais exactement le même arc-en-ciel car l'angle est différent selon leur position.", "date": "2026-06-09"}, {"emoji": "🐦", "theme": "Animaux", "fact": "Les perroquets gris d'Afrique peuvent comprendre le concept de zéro — une capacité cognitive partagée avec les humains, les singes et les abeilles.", "more": "Dans des expériences, des perroquets ont choisi une boîte vide plutôt qu'une boîte contenant un objet, démontrant qu'ils comprennent que 'rien' est inférieur à 'quelque chose'. Cette compréhension abstraite du zéro est considérée comme un marqueur de haute intelligence.", "date": "2026-06-10"}, {"emoji": "🏔️", "theme": "Géographie", "fact": "Le mont Everest n'est pas le point le plus éloigné du centre de la Terre — c'est le volcan Chimborazo en Équateur, car la Terre est aplatie aux pôles.", "more": "La Terre n'est pas une sphère parfaite : elle est légèrement aplatie aux pôles et renflée à l'équateur. Le Chimborazo, bien que moins haut en altitude (6 263 m), est situé près de l'équateur où la Terre est plus large. Son sommet est donc 2 168 m plus loin du centre terrestre que celui de l'Everest.", "date": "2026-06-11"}, {"emoji": "💡", "theme": "Technologie", "fact": "La puissance de calcul de votre smartphone est un million de fois supérieure à celle des ordinateurs de la NASA lors de la mission Apollo 11.", "more": "Les ordinateurs de guidage Apollo avaient 4 Ko de RAM et un processeur à 0,043 MHz. Un smartphone moderne a plusieurs Go de RAM et un processeur à plusieurs GHz. Paradoxalement, les ingénieurs de l'époque ont accompli des prouesses incroyables avec ces ressources minuscules grâce à une optimisation extrême du code.", "date": "2026-06-12"}, {"emoji": "🌺", "theme": "Nature", "fact": "La fleur de certains bambous ne s'épanouit qu'une seule fois tous les 120 ans, puis la plante meurt.", "more": "Ce phénomène s'appelle la floraison mast. Le plus étrange est que tous les individus de la même espèce fleurissent en même temps, partout dans le monde, comme s'ils étaient synchronisés. Les pandas, qui se nourrissent de bambou, sont menacés lors de ces épisodes car leur source de nourriture disparaît massivement.", "date": "2026-06-13"}, {"emoji": "🧪", "theme": "Chimie", "fact": "L'or est tellement rare sur Terre que si tout l'or jamais extrait était fondu, il formerait un cube d'environ 22 mètres de côté.", "more": "Toute l'histoire de l'humanité n'a produit que 190 000 tonnes d'or. La quasi-totalité de l'or terrestre s'est enfoncée dans le noyau de la Terre lors de sa formation. L'or de surface nous vient de météorites tombées il y a 4 milliards d'années, et d'événements cosmiques comme les collisions d'étoiles à neutrons.", "date": "2026-06-14"}, {"emoji": "🐬", "theme": "Animaux", "fact": "Les dauphins ont des noms — ils développent un sifflement unique dès la naissance qui sert d'identifiant individuel reconnu par le groupe.", "more": "Ces 'noms' sont appris, pas innés, ce qui est très rare dans le règne animal. Les dauphins appellent leurs congénères par leur nom pour attirer leur attention. Ils utilisent aussi les noms d'autres dauphins quand ils parlent d'eux en leur absence, suggérant une forme de communication référentielle avancée.", "date": "2026-06-15"}, {"emoji": "⚡", "theme": "Physique", "fact": "La foudre est 5 fois plus chaude que la surface du Soleil. Elle atteint environ 30 000 Kelvin contre 5 778 K pour le Soleil.", "more": "La foudre est si chaude qu'elle vitrifie instantanément le sable là où elle frappe, créant des structures de verre naturel appelées fulgurites. Elle dure entre 1 et 2 millisecondes seulement. La Terre est frappée par environ 100 éclairs par seconde, soit plus de 8 millions par jour.", "date": "2026-06-16"}, {"emoji": "🏛️", "theme": "Histoire", "fact": "Les Romains utilisaient du sang de gladiateur comme médicament. Il était vendu à prix d'or pour traiter l'épilepsie.", "more": "Cette pratique reposait sur la croyance que la vitalité extraordinaire des gladiateurs était contenue dans leur sang. Les spectateurs se précipitaient parfois dans l'arène après les combats pour en recueillir. Des remèdes similaires à base de parties du corps humain ont existé dans de nombreuses cultures jusqu'au XVIIIe siècle.", "date": "2026-06-17"}, {"emoji": "🌿", "theme": "Nature", "fact": "Les arbres d'une forêt communiquent et s'entraident via un réseau de champignons souterrains surnommé le 'Wood Wide Web'.", "more": "Les mycéliums de champignons forment des réseaux reliant les racines de milliers d'arbres. Par ce réseau, les arbres partagent des nutriments, des sucres, et même des signaux d'alarme en cas d'attaque d'insectes. Les arbres mères nourrissent les jeunes pousses à l'ombre. C'est une forme de solidarité végétale.", "date": "2026-06-18"}, {"emoji": "🎭", "theme": "Psychologie", "fact": "L'effet Dunning-Kruger montre que les personnes les moins compétentes dans un domaine surestiment le plus leurs capacités.", "more": "Ironiquement, la compétence nécessaire pour évaluer sa propre performance est la même que celle nécessaire pour bien performer. Les experts, eux, ont tendance à sous-estimer leur niveau car ils supposent que ce qui est facile pour eux l'est pour tout le monde. Cette asymétrie a des implications importantes en éducation et en management.", "date": "2026-06-19"}, {"emoji": "🦎", "theme": "Biologie", "fact": "Certains lézards peuvent courir sur l'eau grâce à des poches d'air qu'ils créent en frappant la surface très rapidement.", "more": "Le basilic commun, surnommé 'lézard Jésus Christ', peut parcourir plusieurs mètres sur l'eau à environ 9 km/h. Ses pattes frappent la surface si vite qu'elles créent une bulle d'air avant de s'enfoncer. Cette technique ne fonctionne qu'à grande vitesse — s'ils ralentissent, ils coulent et doivent nager.", "date": "2026-06-20"}, {"emoji": "🔭", "theme": "Astronomie", "fact": "Quand vous regardez le ciel nocturne, vous regardez dans le passé — la lumière des étoiles a mis des années, voire des millénaires, pour vous atteindre.", "more": "L'étoile la plus proche, Proxima Centauri, est à 4,2 années-lumière — sa lumière a mis 4,2 ans à vous parvenir. Certaines étoiles visibles à l'œil nu sont à des milliers d'années-lumière. Certaines ont peut-être déjà explosé, mais nous ne le savons pas encore car la lumière de l'explosion n'est pas encore arrivée.", "date": "2026-06-21"}, {"emoji": "🍕", "theme": "Alimentation", "fact": "La pizza margherita a été créée en 1889 en hommage à la reine Marguerite de Savoie, avec des couleurs représentant le drapeau italien.", "more": "Selon la légende, le pizzaiolo Raffaele Esposito créa trois pizzas pour la reine en visite à Naples. Elle préféra celle aux couleurs nationales : rouge (tomate), blanc (mozzarella) et vert (basilic). Bien que cette histoire soit bien documentée, des recettes similaires existaient déjà avant cette date.", "date": "2026-06-22"}, {"emoji": "🧬", "theme": "Génétique", "fact": "Les humains partagent 60% de leurs gènes avec une banane.", "more": "Ce chiffre surprenant s'explique par le fait que certains processus biologiques fondamentaux — comme la réplication de l'ADN ou le métabolisme cellulaire — sont si essentiels qu'ils ont été conservés sur des milliards d'années d'évolution. On partage 85% de nos gènes avec une souris, et 98,7% avec un chimpanzé.", "date": "2026-06-23"}, {"emoji": "🎲", "theme": "Mathématiques", "fact": "Si vous mélangez un jeu de 52 cartes correctement, l'ordre obtenu n'a probablement jamais existé dans toute l'histoire de l'humanité.", "more": "Le nombre de combinaisons possibles d'un jeu de 52 cartes est 52! (52 factorielle), soit environ 8×10⁶⁷. Ce nombre est tellement astronomique que même si chaque humain avait mélangé un jeu par seconde depuis le Big Bang, on n'aurait couvert qu'une infime fraction des possibilités. Chaque mélange est donc unique.", "date": "2026-06-24"}, {"emoji": "🐋", "theme": "Animaux", "fact": "Le chant des baleines à bosse évolue chaque année : toutes les baleines d'un même océan apprennent et adoptent les nouvelles 'mélodies' progressivement.", "more": "Les nouvelles chansons se propagent comme des hits musicaux, d'ouest en est dans le Pacifique. Les chercheurs ont observé qu'une nouvelle mélodie apparaît dans une population, puis se répand à travers les océans sur quelques années. Seuls les mâles chantent, probablement pour séduire les femelles.", "date": "2026-06-25"}, {"emoji": "🌡️", "theme": "Sciences", "fact": "Il n'existe pas de température maximale connue dans l'univers, mais il existe une température minimale absolue : le zéro absolu, à -273,15°C.", "more": "Au zéro absolu, les atomes cessent théoriquement tout mouvement. On n'a jamais pu l'atteindre exactement, mais des laboratoires s'en sont approchés à quelques milliardièmes de degrés près. La température la plus haute jamais créée par l'homme est d'environ 5 500 milliards de degrés, produite par le Grand Collisionneur de Hadrons au CERN.", "date": "2026-06-26"}, {"emoji": "🐝", "theme": "Nature", "fact": "Une abeille butineuse visite entre 50 et 1000 fleurs par sortie et doit visiter environ 2 millions de fleurs pour produire 500g de miel.", "more": "Une ruche contient entre 20 000 et 80 000 abeilles. Au cours de sa vie (6 semaines en été), une ouvrière ne produira qu'un douzième de cuillère à café de miel. Pour polliniser, les abeilles peuvent voler jusqu'à 3 km de leur ruche. Elles communiquent les sources de nourriture à leurs congénères via la 'danse des abeilles'.", "date": "2026-06-27"}, {"emoji": "🏺", "theme": "Histoire", "fact": "Les Anciens Grecs ne percevaient pas le bleu comme une couleur distincte — leur langue n'avait pas de mot pour le désigner.", "more": "Homère décrit la mer comme 'couleur de vin' et le ciel n'est jamais qualifié de bleu dans ses épopées. Des études sur des cultures sans mot pour le bleu montrent qu'elles ont plus de mal à le distinguer du vert. Cela suggère que le langage influence notre perception : on 'voit' mieux ce qu'on peut nommer.", "date": "2026-06-28"}, {"emoji": "🚀", "theme": "Espace", "fact": "Les astronautes grandissent d'environ 2 cm dans l'espace, car la colonne vertébrale se détend sans la gravité.", "more": "Sur Terre, la gravité comprime les disques cartilagineux entre les vertèbres tout au long de la journée — c'est pourquoi on est légèrement plus petit le soir que le matin. Dans l'espace, cette compression disparaît et la colonne s'allonge. Ce changement peut causer des douleurs dorsales et revient à la normale quelques semaines après le retour sur Terre.", "date": "2026-06-29"}, {"emoji": "🎸", "theme": "Musique", "fact": "Jimi Hendrix, Janis Joplin et Jim Morrison sont tous décédés à 27 ans, contribuant à créer le mythe du 'Club des 27'.", "more": "D'autres artistes célèbres morts à 27 ans incluent Brian Jones, Kurt Cobain et Amy Winehouse. Des études statistiques ont cependant montré que 27 ans n'est pas statistiquement plus dangereux pour les musiciens que d'autres âges. Le mythe persiste car notre cerveau cherche des patterns, même là où il n'y en a pas.", "date": "2026-06-30"}, {"emoji": "🦭", "theme": "Animaux", "fact": "Les poulpes ont des neurones dans leurs tentacules — chaque tentacule peut 'penser' et agir indépendamment du cerveau central.", "more": "Les deux tiers des 500 millions de neurones d'une pieuvre sont dans ses bras. Chaque tentacule peut résoudre des problèmes locaux sans consulter le cerveau. Après amputation, un tentacule isolé continue de réagir à des stimuli pendant une heure. C'est une intelligence distribuée sans équivalent chez les vertébrés.", "date": "2026-07-01"}, {"emoji": "🌊", "theme": "Géologie", "fact": "L'Himalaya continue de grandir d'environ 5 mm par an, car la plaque tectonique indienne pousse encore sous la plaque eurasienne.", "more": "La collision entre l'Inde et l'Asie a commencé il y a environ 50 millions d'années et se poursuit. L'Everest lui-même grandit d'environ 4 mm par an. Cependant, l'érosion contrebalance une partie de cette croissance. Sans cette érosion, l'Himalaya serait bien plus haut qu'il ne l'est aujourd'hui.", "date": "2026-07-02"}, {"emoji": "🧊", "theme": "Physique", "fact": "La glace est moins dense que l'eau liquide, ce qui est une propriété exceptionnellement rare pour un solide — et c'est cette anomalie qui permet la vie sur Terre.", "more": "Normalement, un solide est plus dense que son liquide. Mais la glace flotte, formant une couche isolante sur les lacs et océans en hiver. Sans cela, l'eau gèlerait de bas en haut, tuant toute vie aquatique. Cette propriété unique de l'eau est l'une des raisons pour lesquelles la vie a pu se développer sur notre planète.", "date": "2026-07-03"}, {"emoji": "🎓", "theme": "Histoire", "fact": "L'Université de Bologne, fondée en 1088, est la plus ancienne université encore en activité dans le monde.", "more": "Elle est plus vieille que la plupart des États européens actuels. Oxford a été fondée vers 1096, Cambridge en 1209. Au Moyen Âge, ces universités n'enseignaient que le droit, la théologie et la médecine. Le concept de diplôme est apparu progressivement — il n'y avait pas de cérémonie de remise des diplômes à l'origine.", "date": "2026-07-04"}, {"emoji": "🐊", "theme": "Animaux", "fact": "Les crocodiles ne peuvent pas tirer la langue — elle est soudée au palais. Ils pleurent également des larmes en mangeant, d'où l'expression 'larmes de crocodile'.", "more": "Les 'larmes' des crocodiles sont en réalité causées par le fait que les glandes lacrymales et les glandes salivaires sont proches, et que la mastication stimule la production de larmes. Les anciens observateurs pensaient que les crocodiles pleuraient de regret en dévorant leurs proies, créant cette expression idiomatique.", "date": "2026-07-05"}, {"emoji": "💻", "theme": "Technologie", "fact": "Le premier bug informatique était un vrai insecte : une mite trouvée dans un relais d'un ordinateur Harvard Mark II en 1947.", "more": "La chercheuse Grace Hopper et son équipe ont trouvé une mite coincée dans un relais électromécanique causant une panne. Ils l'ont collée dans leur carnet de bord avec la note 'First actual case of bug being found'. Grace Hopper est aussi l'une des pionnières du langage COBOL et de la notion de compilateur.", "date": "2026-07-06"}, {"emoji": "🌸", "theme": "Nature", "fact": "Certaines fleurs d'orchidées ressemblent si parfaitement à des abeilles femelles qu'elles trompent les mâles pour les faire les polliniser.", "more": "L'orchidée Ophrys a développé une forme, une texture et même une odeur imitant la phéromone des abeilles femelles. Les mâles tentent de s'accoupler avec la fleur et repartent couverts de pollen. C'est un exemple fascinant de mimétisme chimique — la plante manipule les insectes sans leur offrir de nectar en échange.", "date": "2026-07-07"}, {"emoji": "⚽", "theme": "Sport", "fact": "La durée de 90 minutes pour un match de football n'a pas été choisie scientifiquement — elle résulte d'un match entre Eton et Harrow en 1848.", "more": "Les deux équipes ayant joué pendant 90 minutes ce jour-là, la durée a été adoptée par convention. Les règles du football ont été officiellement codifiées par la Football Association en 1863, mais de nombreux détails comme la durée du match ont été fixés de manière assez arbitraire. Le temps additionnel a été introduit en 1891.", "date": "2026-07-08"}, {"emoji": "🔬", "theme": "Sciences", "fact": "Les virus ne sont pas considérés comme vivants par la plupart des biologistes, car ils ne peuvent pas se reproduire seuls — ils ont besoin d'une cellule hôte.", "more": "Les virus occupent une zone grise entre la chimie et la biologie. Ils possèdent de l'ADN ou de l'ARN, mais n'ont ni métabolisme ni capacité à se répliquer de manière autonome. Ce débat philosophique sur la définition de la vie a des implications pratiques pour comprendre l'origine de la vie et la conception de médicaments antiviraux.", "date": "2026-07-09"}, {"emoji": "🎪", "theme": "Psychologie", "fact": "L'être humain est l'un des rares animaux à se reconnaître dans un miroir — une capacité partagée avec les grands singes, les dauphins, les éléphants et les pies.", "more": "Le test du miroir, inventé par Gordon Gallup Jr. en 1970, consiste à placer une marque sur l'animal et à observer s'il l'examine dans le miroir. La conscience de soi qu'il implique est considérée comme une forme d'intelligence sociale avancée. Les nourrissons humains ne passent ce test qu'à partir de 18-24 mois.", "date": "2026-07-10"}, {"emoji": "🌵", "theme": "Nature", "fact": "Un cactus saguaro met 75 ans pour développer sa première branche latérale, et peut vivre plus de 150 ans.", "more": "Le saguaro ne fleurit pour la première fois qu'à 35 ans et n'atteint sa hauteur maximale (15 m) qu'après un siècle. Un saguaro adulte peut stocker jusqu'à 760 litres d'eau après une pluie. Ces cactus sont des écosystèmes à eux seuls : pics, hiboux et autres oiseaux y nichent, et de nombreux animaux se nourrissent de leurs fruits.", "date": "2026-07-11"}, {"emoji": "🗿", "theme": "Histoire", "fact": "Les statues de l'île de Pâques ont des corps entiers enfouis sous terre — seules leurs têtes dépassent.", "more": "Cette découverte, faite lors de fouilles dans les années 2010, a révélé que les moaï ont des torses complets, parfois jusqu'à 9 mètres, ornés de sculptures. On pense que les corps se sont progressivement enfouis à cause de l'érosion et des glissements de terrain. Les statues ont été sculptées entre 1250 et 1500 apr. J.-C.", "date": "2026-07-12"}, {"emoji": "🐌", "theme": "Animaux", "fact": "Les escargots peuvent dormir jusqu'à 3 ans consécutifs pour survivre à des conditions climatiques défavorables.", "more": "Cette hibernation prolongée s'appelle l'estivation quand elle est provoquée par la chaleur, et l'hibernation quand c'est le froid. L'escargot scelle l'ouverture de sa coquille avec un film de mucus durci appelé épiphragme pour éviter la déshydratation. Certaines espèces des déserts peuvent ainsi attendre des années entre deux pluies.", "date": "2026-07-13"}, {"emoji": "💎", "theme": "Géologie", "fact": "Les diamants peuvent pleuvoir sur Neptune et Uranus. La pression y est suffisante pour transformer le carbone de l'atmosphère en diamants solides.", "more": "Des expériences en laboratoire reproduisant les conditions extrêmes de ces planètes (millions de fois la pression terrestre) ont effectivement produit des diamants. Sur Neptune, ces cristaux tomberaient comme de la grêle et s'accumuleraient peut-être autour d'un noyau. Des phénomènes similaires pourraient exister sur d'autres géantes gazeuses.", "date": "2026-07-14"}, {"emoji": "🧭", "theme": "Histoire", "fact": "Les Vikings ont découvert l'Amérique du Nord 500 ans avant Christophe Colomb, vers l'an 1000, et ont fondé une colonie à Terre-Neuve.", "more": "Le site de L'Anse aux Meadows, découvert au Canada en 1960, est la preuve archéologique d'une présence viking en Amérique du Nord. Leif Erikson, fils d'Erik le Rouge, aurait conduit cette expédition. La colonie a été abandonnée assez rapidement, probablement en raison de conflits avec les populations locales.", "date": "2026-07-15"}, {"emoji": "🎯", "theme": "Psychologie", "fact": "La règle des 10 000 heures pour maîtriser une compétence, popularisée par Malcolm Gladwell, est une simplification excessive de la recherche d'Anders Ericsson.", "more": "Ericsson a montré que c'est la 'pratique délibérée' — ciblée, difficile, avec feedback — qui compte, pas simplement le temps passé. 10 000 heures de pratique non intentionnelle n'apportent pas l'expertise. De plus, le nombre d'heures varie énormément selon les domaines et les individus. La génétique et l'âge de début jouent aussi un rôle.", "date": "2026-07-16"}, {"emoji": "🌏", "theme": "Géographie", "fact": "L'Australie est plus large que la Lune. Le continent australien mesure 4 000 km de large, contre 3 474 km de diamètre pour la Lune.", "more": "Cette comparaison surprend car on associe souvent l'Australie à une île relativement petite sur les cartes du monde. Les projections cartographiques déforment les surfaces et donnent une idée fausse des tailles relatives, notamment aux latitudes élevées. L'Australie est en réalité le 6e plus grand pays du monde.", "date": "2026-07-17"}, {"emoji": "🔮", "theme": "Physique", "fact": "Selon la mécanique quantique, un électron n'a pas de position définie avant d'être observé — il existe simultanément en plusieurs endroits.", "more": "Le principe de superposition quantique dit qu'une particule peut être dans plusieurs états à la fois jusqu'à ce qu'on la mesure. C'est le principe derrière l'expérience de pensée du 'chat de Schrödinger'. Ce n'est pas une simple ignorance de la position — la particule est véritablement dans plusieurs états simultanément.", "date": "2026-07-18"}, {"emoji": "🦚", "theme": "Évolution", "fact": "La queue extravagante du paon est en réalité un handicap physique — son existence prouve aux femelles que le mâle est suffisamment fort pour survivre malgré ce désavantage.", "more": "Le biologiste Amotz Zahavi a proposé le 'principe du handicap' : les signaux coûteux sont honnêtes car seuls les individus vraiment vigoureux peuvent se les permettre. La queue du paon le ralentit et le rend visible aux prédateurs. Une femelle qui choisit un mâle avec une belle queue choisit un survivant génétiquement supérieur.", "date": "2026-07-19"}, {"emoji": "📡", "theme": "Espace", "fact": "Voyager 1, lancé en 1977, est l'objet humain le plus éloigné de la Terre. Il a quitté notre système solaire et se trouve à plus de 23 milliards de km.", "more": "Malgré cette distance incroyable, Voyager 1 communique encore avec la Terre. Les signaux radio, voyageant à la vitesse de la lumière, mettent plus de 21 heures pour nous parvenir. La sonde fonctionne encore grâce à des générateurs thermoélectriques nucléaires. Elle devrait rester opérationnelle jusqu'en 2025 environ.", "date": "2026-07-20"}, {"emoji": "🐠", "theme": "Biologie", "fact": "Tous les clowns dans la nature sont mâles. Si la femelle dominante d'un groupe meurt, le mâle dominant change de sexe pour la remplacer.", "more": "Les poissons-clowns sont des hermaphrodites séquentiels protandres. Dans un groupe, seuls deux individus se reproduisent : la femelle dominante et le mâle dominant. Les autres sont des mâles non reproducteurs. Ce mécanisme garantit toujours la présence d'un couple reproducteur. C'est pour cela que dans 'Le Monde de Nemo', après la mort de la mère, Nemo aurait dû devenir une femelle !", "date": "2026-07-21"}, {"emoji": "🏰", "theme": "Histoire", "fact": "La construction de la cathédrale de Chartres a duré plus longtemps que l'existence des États-Unis : elle a commencé en 1194 et des travaux ont duré plus de 300 ans.", "more": "La plupart des grandes cathédrales médiévales ont été construites sur plusieurs générations. Les bâtisseurs qui commençaient ne verraient jamais l'achèvement de leur œuvre. Chartres est remarquable car sa construction principale fut relativement rapide (environ 60 ans), mais les ajouts, restaurations et travaux ont continué pendant des siècles.", "date": "2026-07-22"}, {"emoji": "🧲", "theme": "Sciences", "fact": "La force électromagnétique est 10³⁶ fois plus puissante que la gravité — c'est pourquoi un simple aimant de réfrigérateur peut contrer l'attraction gravitationnelle de toute la Terre.", "more": "La gravité est de loin la force la plus faible de la nature mais elle est toujours attractive et agit à l'infini, ce qui la rend dominante à grande échelle. L'électromagnétisme peut être attractif ou répulsif, et les charges s'annulent, ce qui empêche son accumulation. C'est pourquoi les planètes et étoiles sont gouvernées par la gravité.", "date": "2026-07-23"}, {"emoji": "🦩", "theme": "Animaux", "fact": "Les flamants roses naissent blancs. Leur couleur rose vient des pigments des algues et crustacés qu'ils mangent. En zoo, on ajoute des caroténoïdes à leur alimentation.", "more": "Les crevettes artémias, dont les flamants se nourrissent, contiennent du bêta-carotène. Si un flamant ne mange plus ces aliments, il pâlit progressivement. La couleur est un signal de santé : les flamants aux teintes les plus vives sont préférés comme partenaires. Ils peuvent aussi 'transférer' des pigments à leurs petits via le lait de jabot.", "date": "2026-07-24"}, {"emoji": "📜", "theme": "Linguistique", "fact": "Le français est la langue officielle de 29 pays — plus que l'anglais (26 pays) — mais l'anglais est de loin la langue la plus parlée dans le monde.", "more": "Cette distinction entre 'langue officielle' et 'langue parlée' est importante. Le mandarin a le plus de locuteurs natifs, l'anglais le plus de locuteurs au total. Le français est présent sur 5 continents et est la 5e langue la plus parlée. Son influence vient en grande partie de la colonisation française en Afrique subsaharienne.", "date": "2026-07-25"}, {"emoji": "🌙", "theme": "Histoire", "fact": "Neil Armstrong a apporté sur la Lune un morceau du premier avion des frères Wright, en hommage au premier vol motorisé de l'histoire.", "more": "Ce fragment de bois et de tissu du Flyer I était dans la combinaison de Neil Armstrong lors des premiers pas sur la Lune en 1969. Seulement 66 ans séparaient le premier vol motorisé de l'histoire (17 décembre 1903) du premier pas sur la Lune (20 juillet 1969). Orville Wright était encore en vie lors des débuts de la NASA.", "date": "2026-07-26"}, {"emoji": "🌡️", "theme": "Physique", "fact": "Le son voyage 4 fois plus vite dans l'eau que dans l'air, et les baleines exploitent ce principe pour communiquer sur des milliers de kilomètres.", "more": "Dans l'air, le son se propage à environ 343 m/s. Dans l'eau, il atteint 1 480 m/s. Les baleines bleues peuvent se communiquer à travers des océans entiers grâce à un phénomène appelé le SOFAR (Sound Fixing And Ranging), une couche de l'océan qui concentre et amplifie les sons à basse fréquence.", "date": "2026-07-27"}, {"emoji": "🐝", "theme": "Mathématiques", "fact": "Les alvéoles hexagonales des abeilles sont la forme géométrique la plus efficace pour maximiser l'espace de stockage avec un minimum de cire.", "more": "Ce résultat, appelé la conjecture des nids d'abeilles, a été prouvé mathématiquement seulement en 1999 par Thomas Hales. Parmi les formes pouvant paver un plan sans espaces vides (triangles, carrés, hexagones), l'hexagone a le périmètre le plus court pour une surface donnée. Les abeilles ont 'découvert' ce principe géométrique optimal par évolution.", "date": "2026-07-28"}, {"emoji": "🎬", "theme": "Art", "fact": "Le film 'Metropolis' de Fritz Lang (1927) a inventé des effets spéciaux encore utilisés aujourd'hui, comme la rotation de la caméra et les miniatures filmées à grande vitesse.", "more": "Ce film de science-fiction muet est souvent cité comme l'un des plus influents de l'histoire du cinéma. Sa vision d'une ville futuriste a inspiré des décennies de science-fiction, de Star Wars à Blade Runner. Il a aussi popularisé l'archétype du robot humanoïde. Il était considéré comme perdu jusqu'à ce qu'une copie complète soit retrouvée en Argentine en 2008.", "date": "2026-07-29"}, {"emoji": "🔬", "theme": "Médecine", "fact": "La pénicilline a été découverte par accident en 1928, lorsqu'Alexander Fleming remarqua qu'une moisissure avait tué des bactéries dans une boîte de Petri oubliée.", "more": "Fleming était parti en vacances sans nettoyer son laboratoire. À son retour, il remarqua une moisissure (Penicillium notatum) autour de laquelle les bactéries avaient été détruites. Mais c'est Howard Florey et Ernst Chain qui, 12 ans plus tard, ont développé la pénicilline comme médicament. Les trois ont partagé le Prix Nobel en 1945.", "date": "2026-07-30"}, {"emoji": "🌊", "theme": "Océanographie", "fact": "Moins de 20% des fonds océaniques ont été cartographiés avec précision. On connaît mieux la surface de Mars que les profondeurs de nos océans.", "more": "La cartographie précise des fonds marins nécessite des sondes sous-marines car les satellites ne peuvent pas pénétrer l'eau. Les profondeurs extrêmes et la pression rendent l'exploration très coûteuse. Les fosses abyssales abritent probablement des milliers d'espèces encore inconnues. La fosse des Mariannes a été atteinte moins de fois que la surface de la Lune.", "date": "2026-07-31"}, {"emoji": "🐓", "theme": "Évolution", "fact": "L'animal vivant le plus proche génétiquement du Tyrannosaurus Rex n'est pas un crocodile ni un lézard, mais le poulet.", "more": "Une analyse protéomique réalisée en 2008 sur des fragments de collagène fossilisé d'un T. Rex a montré que les oiseaux sont les descendants directs des dinosaures théropodes. Les dinosaures ne sont pas vraiment éteints — ils ont évolué en oiseaux. Techniquement, un poulet est donc un dinosaure, tout comme les 10 000 espèces d'oiseaux actuelles.", "date": "2026-08-01"}, {"emoji": "🌐", "theme": "Technologie", "fact": "Internet et le World Wide Web ne sont pas la même chose. Internet est le réseau physique ; le Web est un service qui utilise ce réseau, inventé en 1989 par Tim Berners-Lee.", "more": "Internet existe depuis les années 1960 (ARPANET). Le Web — les pages HTML accessibles via des navigateurs — n'est qu'une des applications d'Internet, comme l'email ou les appels vidéo. Tim Berners-Lee a inventé le Web au CERN à Genève pour faciliter le partage d'informations entre scientifiques, et a délibérément choisi de ne pas le breveter.", "date": "2026-08-02"}, {"emoji": "🐺", "theme": "Écologie", "fact": "La réintroduction des loups dans le parc de Yellowstone en 1995 a modifié le cours des rivières — un phénomène appelé 'cascade trophique'.", "more": "Les loups ont fait fuir les cervidés des vallées et des berges. La végétation a repoussé, les berges se sont stabilisées, le comportement des rivières a changé. Les castors sont revenus, créant des zones humides. Ce phénomène illustre comment un prédateur au sommet de la chaîne alimentaire peut transformer un écosystème entier, y compris sa géographie physique.", "date": "2026-08-03"}, {"emoji": "🎭", "theme": "Histoire", "fact": "Shakespeare a inventé plus de 1 700 mots anglais encore utilisés aujourd'hui, dont 'bedroom', 'lonely', 'generous' et 'obscene'.", "more": "Shakespeare formait de nouveaux mots en ajoutant des préfixes, des suffixes ou en changeant les catégories grammaticales. Il utilisait des noms comme verbes, des verbes comme adjectifs. Son influence sur la langue anglaise est comparable à celle de Montaigne sur le français ou de Luther sur l'allemand. Environ 10% du vocabulaire anglais courant lui est attribué.", "date": "2026-08-04"}, {"emoji": "🧲", "theme": "Physique", "fact": "Si le Soleil était la taille d'une balle de basket, la Terre serait un grain de poivre à 26 mètres de distance, et l'étoile la plus proche serait à 7 200 km.", "more": "Cette analogie illustre l'immensité des distances dans l'espace. L'espace est principalement... vide. Si on retirait tout l'espace vide du système solaire, tout tiendrait dans un volume plus petit que la Lune. Les étoiles sont si éloignées les unes des autres que les collisions galactiques se produisent presque sans qu'une seule étoile en heurte une autre.", "date": "2026-08-05"}, {"emoji": "🦴", "theme": "Biologie", "fact": "Les bébés humains naissent avec 270 os. Les adultes n'en ont que 206, car de nombreux os fusionnent pendant la croissance.", "more": "La fusion des os se produit surtout pendant l'enfance et l'adolescence et se termine généralement vers 25 ans. Le crâne d'un nourrisson est composé de plusieurs plaques osseuses séparées (les fontanelles), ce qui permet au cerveau de grandir rapidement et facilite l'accouchement. La dernière fontanelle se ferme généralement vers 18 mois.", "date": "2026-08-06"}, {"emoji": "🏄", "theme": "Géographie", "fact": "Hawaï est l'état américain le plus au sud, mais aussi celui qui se déplace le plus vers le nord — à 7,5 cm par an, entraîné par les plaques tectoniques.", "more": "Les îles hawaïennes sont formées par un point chaud volcanique fixe sous le Pacifique. La plaque tectonique se déplace par-dessus, créant une chaîne d'îles de plus en plus vieilles vers le nord-ouest. La Grande Île, la plus jeune, est actuellement au-dessus du point chaud. Une nouvelle île, Lō'ihi, est en train de se former sous l'eau à quelques kilomètres au sud-est.", "date": "2026-08-07"}, {"emoji": "🔭", "theme": "Astronomie", "fact": "Il y a plus d'étoiles dans l'univers observable que de grains de sable sur toutes les plages de la Terre.", "more": "On estime à 10²⁴ le nombre d'étoiles dans l'univers observable, soit 1 000 milliards de milliards. Le nombre de grains de sable sur Terre est d'environ 7,5×10¹⁸. L'univers observable n'est qu'une fraction de l'univers total, qui pourrait être infini. Ces chiffres donnent le vertige mais illustrent l'échelle incompréhensible du cosmos.", "date": "2026-08-08"}, {"emoji": "🍄", "theme": "Nature", "fact": "Le plus grand organisme vivant sur Terre est un champignon — un armillaire couleur de miel dans l'Oregon qui s'étend sur 9,6 km² et a environ 8 000 ans.", "more": "Cet organisme (Armillaria ostoyae) est principalement sous terre, invisible. Ce qu'on voit en surface ne sont que les fructifications. Il tue les conifères de la forêt en infestant leurs racines. Sa taille a été découverte en 1998 lors d'une étude sur les maladies des arbres dans la forêt de Malheur. Il pèse environ 35 000 tonnes.", "date": "2026-08-09"}, {"emoji": "🎵", "theme": "Neurosciences", "fact": "Les chansons qui restent coincées dans la tête ('earworms') sont un phénomène cognitif réel, lié à des zones du cerveau actives même sans stimulus sonore.", "more": "Environ 90% des personnes ont des earworms au moins une fois par semaine. Les chansons simples, répétitives et récemment entendues sont les plus propices. James Kellaris, chercheur en marketing, a découvert que les chansons avec des 'lacunes' incongrues dans leur mélodie sont particulièrement tenaces, car le cerveau cherche à les compléter.", "date": "2026-08-10"}, {"emoji": "🌿", "theme": "Botanique", "fact": "Les plantes carnivores comme la Vénus attrape-mouche 'comptent' les stimulations de leurs poils sensoriels — deux contacts en 20 secondes déclenchent la fermeture.", "more": "Ce mécanisme de comptage évite les fermetures inutiles causées par la pluie ou les débris. Une troisième stimulation déclenche la production d'enzymes digestives. Après 5-7 captures, le piège meurt. La feuille entière ne sert de piège que 3 à 4 fois dans sa vie. Ces plantes poussent dans des sols pauvres en azote qu'elles compensent en digérant des insectes.", "date": "2026-08-11"}, {"emoji": "💰", "theme": "Économie", "fact": "Le PIB du Luxembourg par habitant est parmi les plus élevés au monde, mais une grande partie est produite par des travailleurs frontaliers qui n'y vivent pas.", "more": "Environ 200 000 travailleurs frontaliers (France, Belgique, Allemagne) contribuent au PIB luxembourgeois mais n'entrent pas dans le calcul de la population. Si on utilisait le Revenu National Brut par habitant, qui compte les revenus des résidents, le classement serait différent. Ce cas illustre les limites du PIB comme mesure de bien-être.", "date": "2026-08-12"}, {"emoji": "🐍", "theme": "Animaux", "fact": "Les serpents n'ont pas d'oreilles externes, mais ils 'entendent' en détectant les vibrations du sol via leur mâchoire inférieure reliée à leur oreille interne.", "more": "Ce système permet aux serpents de détecter les mouvements d'animaux à des dizaines de mètres. Ils possèdent aussi des organes pit (fossettes loréales) qui détectent les infrarouges, leur permettant de 'voir' la chaleur corporelle de leurs proies dans l'obscurité totale. Certaines espèces peuvent détecter une différence de température de 0,003°C.", "date": "2026-08-13"}, {"emoji": "🌍", "theme": "Histoire", "fact": "Le traité de paix le plus long de l'histoire est celui entre la France et l'Angleterre signé en 1259, qui a formellement mis fin à la guerre de 100 ans... 97 ans avant la fin réelle des combats.", "more": "La guerre de Cent Ans (1337-1453) a duré 116 ans, entrecoupée de trêves et de traités rarement respectés. Elle a profondément forgé les identités nationales française et anglaise. Jeanne d'Arc, qui a retourné le cours de la guerre, a été brûlée en 1431 mais réhabilitée 25 ans plus tard. Elle n'a été canonisée qu'en 1920.", "date": "2026-08-14"}, {"emoji": "🎯", "theme": "Neurosciences", "fact": "Le cerveau humain produit environ 70 000 pensées par jour, et une majorité sont identiques à celles de la veille.", "more": "Des études en neurosciences suggèrent que 70 à 80% de nos pensées quotidiennes sont répétitives. Cette tendance est liée au réseau du mode par défaut, actif quand on rêvasse. La méditation de pleine conscience vise précisément à interrompre ce cycle automatique. La pensée créative et l'apprentissage favorisent la création de nouvelles connexions neuronales.", "date": "2026-08-15"}, {"emoji": "🏗️", "theme": "Architecture", "fact": "La Tour Eiffel grandit de 15 cm en été à cause de la dilatation thermique du métal, et se penche légèrement à l'opposé du Soleil.", "more": "Construite en fer puddlé, la tour réagit aux changements de température : le métal se dilate sous la chaleur et se contracte sous le froid. Ce phénomène de dilatation thermique a été soigneusement calculé par Gustave Eiffel. L'inclinaison causée par le Soleil est d'environ 18 cm — les ingénieurs de l'époque avaient anticipé ce comportement.", "date": "2026-08-16"}, {"emoji": "🐧", "theme": "Animaux", "fact": "Les manchots proposent des cailloux comme cadeau de mariage. Les mâles cherchent les plus beaux galets pour séduire les femelles, qui les utilisent pour construire leur nid.", "more": "Chez les manchots Adélie, offrir un caillou est un rituel de cour crucial. Les femelles choisissent les mâles offrant les meilleurs cailloux. Des mâles volent parfois des cailloux à des nids voisins. Ce comportement a fasciné les scientifiques car il suggère une forme de cadeaux intentionnels avec compréhension de la valeur de l'objet.", "date": "2026-08-17"}, {"emoji": "🔐", "theme": "Mathématiques", "fact": "La cryptographie moderne repose sur le fait qu'il est facile de multiplier deux grands nombres premiers, mais pratiquement impossible de factoriser leur produit.", "more": "Le chiffrement RSA utilise des nombres premiers de plusieurs centaines de chiffres. Multiplier deux tels nombres prend une milliseconde ; les retrouver à partir de leur produit prendrait des milliards d'années même avec les ordinateurs les plus puissants. L'avènement des ordinateurs quantiques pourrait casser ce système, poussant la cryptographie vers de nouveaux algorithmes.", "date": "2026-08-18"}, {"emoji": "🌺", "theme": "Botanique", "fact": "La vanille et la cannelle ne sont pas des fruits — la vanille est une gousse d'orchidée et la cannelle est de l'écorce d'arbre séchée.", "more": "La vanille vient d'une orchidée originaire du Mexique (Vanilla planifolia). En dehors de son aire naturelle, elle doit être pollinisée à la main fleur par fleur, ce qui explique son prix élevé. La cannelle vraie (Cinnamomum verum) vient du Sri Lanka. Ce qu'on vend souvent comme cannelle en Europe est en réalité de la casse, une espèce proche moins raffinée.", "date": "2026-08-19"}, {"emoji": "🧊", "theme": "Chimie", "fact": "L'hélium est le seul élément qui ne peut pas être solidifié à pression atmosphérique normale, même au zéro absolu.", "more": "Pour solidifier l'hélium, il faut une pression d'au moins 25 atmosphères. C'est dû aux faibles interactions entre ses atomes et à ses propriétés quantiques. L'hélium liquide présente aussi un phénomène unique : la superfluidité, où il coule sans aucune résistance et peut remonter les parois d'un récipient par capillarité quantique.", "date": "2026-08-20"}, {"emoji": "🗺️", "theme": "Géographie", "fact": "La Russie est si grande qu'elle chevauche 11 fuseaux horaires — quand il est midi à Moscou, il est déjà 23h à l'extrême est du pays.", "more": "La Russie couvre 17,1 millions de km², soit plus que la surface de Pluton. Elle partage des frontières avec 14 pays, plus que n'importe quel autre pays au monde. Sa largeur est telle que le soleil se couche à l'extrême est avant qu'il ne se lève à l'extrême ouest. Le trans-sibérien, le train le plus long du monde, met 6 jours pour la traverser.", "date": "2026-08-21"}, {"emoji": "🧠", "theme": "Neurosciences", "fact": "L'ocytocine, surnommée 'hormone de l'amour', est aussi libérée lors de câlins avec son chien, ce qui explique le lien fort entre humains et canidés.", "more": "Une étude japonaise a montré que se regarder dans les yeux avec son chien déclenche une montée d'ocytocine chez les deux espèces. Ce mécanisme est normalement réservé aux liens mère-enfant. Les chiens sont les seuls animaux à avoir développé ce lien avec une autre espèce. Cela expliquerait pourquoi la domestication du chien a été si profonde et durable.", "date": "2026-08-22"}];
+
+function getTodayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function formatDateLong(dateStr) {
+  const [y,m,d] = dateStr.split('-');
+  const months = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+  const days = ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
+  const date = new Date(parseInt(y),parseInt(m)-1,parseInt(d));
+  return `${days[date.getDay()]} ${parseInt(d)} ${months[parseInt(m)-1]} ${y}`;
+}
+function formatDateShort(dateStr) {
+  const [y,m,d] = dateStr.split('-');
+  const months = ['jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'];
+  return `${parseInt(d)} ${months[parseInt(m)-1]} ${y}`;
+}
+function getFactForDate(dateStr) {
+  return FACTS_DATA.find(f => f.date === dateStr) || null;
+}
+function getPastFacts() {
+  const today = getTodayStr();
+  return FACTS_DATA.filter(f => f.date <= today).reverse();
+}
+function displayFact(fact) {
+  document.getElementById('factDisplay').innerHTML = `
+    <span class="emoji-display">${fact.emoji || '💡'}</span>
+    <div class="category-tag">${fact.theme || 'Savoir'}</div>
+    <h1 class="fact-headline">${fact.fact}</h1>
+    <div class="divider"></div>
+    <div class="more-section">
+      <p class="more-label">Pour aller plus loin</p>
+      <p class="more-text">${fact.more || ''}</p>
+    </div>`;
+}
+function displayNotFound() {
+  document.getElementById('factDisplay').innerHTML = '<p class="not-found">Aucun fait prévu pour aujourd\'hui.<br>Reviens bientôt !</p>';
+}
+function renderHistory() {
+  const past = getPastFacts();
+  const list = document.getElementById('historyList');
+  if (past.length <= 1) {
+    list.innerHTML = '<p style="color:var(--muted);font-size:14px;padding:1rem 0;">Reviens les prochains jours pour voir les faits précédents !</p>';
+    return;
+  }
+  list.innerHTML = past.slice(1).map(h => `
+    <div class="history-item">
+      <div class="history-item-date">${formatDateShort(h.date)}</div>
+      <div class="history-item-theme">${h.theme || ''}</div>
+      <div class="history-item-fact">${h.emoji || ''} ${h.fact}</div>
+    </div>`).join('');
+}
+function openHistory() {
+  renderHistory();
+  document.getElementById('historyPanel').classList.add('open');
+  document.getElementById('overlay').classList.add('open');
+}
+function closeHistory() {
+  document.getElementById('historyPanel').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+}
+
+// Init
+const today = getTodayStr();
+document.getElementById('dateDisplay').textContent = formatDateLong(today);
+const fact = getFactForDate(today);
+if (fact) displayFact(fact);
+else displayNotFound();
+
+// Dismiss intro after animation completes
+setTimeout(() => {
+  const intro = document.getElementById('intro');
+  intro.classList.add('fade-out');
+  setTimeout(() => intro.remove(), 700);
+}, 1700);
+</script>
+</body>
+</html>
